@@ -135,12 +135,14 @@ if __name__ == '__main__':
                         help="Discrimitive shapeDTW warp preset augmentation")
     parser.add_argument('--extra_tag', type=str, default="", help="Anything extra")
 
-    # TimeXer
-    parser.add_argument('--patch_len', type=int, default=24, help='patch length')
+    # TimeXer - 修正为原始默认值
+    parser.add_argument('--patch_len', type=int, default=16, help='patch length')  # 改为16
     
     # Multi-scale patch arguments for M1 module
     parser.add_argument('--use_multi_scale', action='store_true', help='Enable multi-scale patch tokenization (M1)')
     parser.add_argument('--patch_sizes', type=str, default='8,16,24', help='Comma-separated patch sizes for multi-scale (e.g., "8,16,24")')
+    parser.add_argument('--fusion_type', type=str, default='attention', choices=['attention', 'gated', 'hierarchical', 'concat'], 
+                        help='Fusion strategy for multi-scale patches: attention, gated, hierarchical, or concat')
 
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False

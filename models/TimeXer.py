@@ -21,13 +21,141 @@ class FlattenHead(nn.Module):
         return x
 
 
+class ScaleFusionModule(nn.Module):
+    """Advanced fusion module for multi-scale patches"""
+    def __init__(self, d_model, num_scales, fusion_type="attention"):
+        super(ScaleFusionModule, self).__init__()
+        self.d_model = d_model
+        self.num_scales = num_scales
+        self.fusion_type = fusion_type
+        
+        if fusion_type == "attention":
+            # Cross-scale attention mechanism
+            self.scale_attention = nn.MultiheadAttention(d_model, num_heads=4, dropout=0.1, batch_first=True)
+            self.norm1 = nn.LayerNorm(d_model)
+            self.norm2 = nn.LayerNorm(d_model)
+            
+            # Feed-forward network
+            self.ffn = nn.Sequential(
+                nn.Linear(d_model, d_model * 2),
+                nn.GELU(),
+                nn.Dropout(0.1),
+                nn.Linear(d_model * 2, d_model),
+                nn.Dropout(0.1)
+            )
+            
+        elif fusion_type == "gated":
+            # Gated fusion with learnable weights
+            self.gate_weights = nn.Parameter(torch.ones(num_scales) / num_scales)
+            self.gate_projection = nn.Linear(d_model * num_scales, d_model)
+            self.gate_activation = nn.Sigmoid()
+            
+        elif fusion_type == "hierarchical":
+            # Hierarchical fusion - combine scales progressively
+            self.scale_combiners = nn.ModuleList([
+                nn.Sequential(
+                    nn.Linear(d_model * 2, d_model),
+                    nn.LayerNorm(d_model),
+                    nn.GELU(),
+                    nn.Dropout(0.1)
+                ) for _ in range(num_scales - 1)
+            ])
+    
+    def forward(self, scale_embeddings, scale_patch_nums):
+        """
+        Args:
+            scale_embeddings: List of embeddings for each scale [B, n_vars, patch_num_i, d_model]
+            scale_patch_nums: List of patch numbers for each scale
+        Returns:
+            fused_embedding: [B, n_vars, total_patches, d_model]
+        """
+        batch_size, n_vars = scale_embeddings[0].shape[:2]
+        
+        if self.fusion_type == "attention":
+            return self._attention_fusion(scale_embeddings, batch_size, n_vars)
+        elif self.fusion_type == "gated":
+            return self._gated_fusion(scale_embeddings, batch_size, n_vars)
+        elif self.fusion_type == "hierarchical":
+            return self._hierarchical_fusion(scale_embeddings, batch_size, n_vars)
+        else:
+            # Fallback to simple concatenation
+            return torch.cat(scale_embeddings, dim=2)
+    
+    def _attention_fusion(self, scale_embeddings, batch_size, n_vars):
+        """Cross-scale attention fusion"""
+        # Concatenate all scales for attention
+        all_patches = torch.cat(scale_embeddings, dim=2)  # [B, n_vars, total_patches, d_model]
+        
+        # Reshape for attention: [B*n_vars, total_patches, d_model]
+        all_patches_flat = all_patches.view(batch_size * n_vars, -1, self.d_model)
+        
+        # Self-attention across all patches from different scales
+        attn_out, _ = self.scale_attention(all_patches_flat, all_patches_flat, all_patches_flat)
+        attn_out = self.norm1(all_patches_flat + attn_out)
+        
+        # Feed-forward
+        ffn_out = self.ffn(attn_out)
+        fused = self.norm2(attn_out + ffn_out)
+        
+        # Reshape back: [B, n_vars, total_patches, d_model]
+        total_patches = fused.shape[1]
+        fused = fused.view(batch_size, n_vars, total_patches, self.d_model)
+        
+        return fused
+    
+    def _gated_fusion(self, scale_embeddings, batch_size, n_vars):
+        """Gated fusion with learnable scale weights"""
+        # Apply learned weights to each scale
+        weighted_scales = []
+        for i, embedding in enumerate(scale_embeddings):
+            weight = torch.softmax(self.gate_weights, dim=0)[i]
+            weighted_scales.append(embedding * weight)
+        
+        # Concatenate weighted scales
+        concatenated = torch.cat(weighted_scales, dim=2)
+        
+        return concatenated
+    
+    def _hierarchical_fusion(self, scale_embeddings, batch_size, n_vars):
+        """Hierarchical fusion - combine scales progressively"""
+        if len(scale_embeddings) < 2:
+            return scale_embeddings[0]
+        
+        # Start with the first two scales
+        fused = scale_embeddings[0]
+        
+        for i in range(1, len(scale_embeddings)):
+            # Combine current fused result with next scale
+            next_scale = scale_embeddings[i]
+            
+            # Pad to same length if needed for concatenation
+            if fused.shape[2] != next_scale.shape[2]:
+                # Simply concatenate along patch dimension
+                combined_input = torch.cat([fused, next_scale], dim=2)
+            else:
+                # If same patch count, concatenate along feature dimension
+                combined_input = torch.cat([fused, next_scale], dim=3)
+                # Project back to d_model
+                combined_input = combined_input.view(batch_size * n_vars, -1, self.d_model * 2)
+                combined_input = self.scale_combiners[i-1](combined_input)
+                combined_input = combined_input.view(batch_size, n_vars, -1, self.d_model)
+                fused = combined_input
+                continue
+            
+            # For different patch counts, we concatenate and continue
+            fused = combined_input
+        
+        return fused
+
+
 class MultiScaleEnEmbedding(nn.Module):
-    """Multi-scale patch embedding for M1 module"""
-    def __init__(self, n_vars, d_model, patch_sizes, seq_len, dropout):
+    """Enhanced Multi-scale patch embedding with advanced fusion"""
+    def __init__(self, n_vars, d_model, patch_sizes, seq_len, dropout, fusion_type="attention"):
         super(MultiScaleEnEmbedding, self).__init__()
         self.patch_sizes = patch_sizes
         self.seq_len = seq_len
         self.d_model = d_model
+        self.fusion_type = fusion_type
         
         # Create embeddings for each patch size
         self.patch_embeddings = nn.ModuleDict()
@@ -39,19 +167,17 @@ class MultiScaleEnEmbedding(nn.Module):
                 self.patch_nums[str(patch_size)] = patch_num
                 self.patch_embeddings[str(patch_size)] = nn.Linear(patch_size, d_model, bias=False)
         
-        # Single shared global token (more parameter efficient)
-        self.shared_glb_token = nn.Parameter(torch.randn(1, n_vars, 1, d_model))
-        
-        # Scale-specific adaptation layers for the global token
-        self.scale_adapters = nn.ModuleDict()
+        # Scale-specific global tokens (one per scale)
+        self.global_tokens = nn.ParameterDict()
         for patch_size in patch_sizes:
-            self.scale_adapters[str(patch_size)] = nn.Linear(d_model, d_model, bias=True)
+            self.global_tokens[str(patch_size)] = nn.Parameter(torch.randn(1, n_vars, 1, d_model))
         
         # Position embedding
         self.position_embedding = PositionalEmbedding(d_model)
         
-        # Fusion mechanism - learnable weights for combining different scales
-        self.scale_fusion = nn.Linear(len(patch_sizes) * d_model, d_model)
+        # Advanced fusion module
+        self.scale_fusion = ScaleFusionModule(d_model, len(patch_sizes), fusion_type)
+        
         self.dropout = nn.Dropout(dropout)
         
         # Calculate total patch numbers for head computation
@@ -63,6 +189,7 @@ class MultiScaleEnEmbedding(nn.Module):
         batch_size = x.shape[0]
         
         scale_embeddings = []
+        scale_patch_nums = []
         
         for patch_size in self.patch_sizes:
             if patch_size > 0:
@@ -79,26 +206,23 @@ class MultiScaleEnEmbedding(nn.Module):
                 # Reshape back
                 embedded = torch.reshape(embedded, (batch_size, n_vars, embedded.shape[-2], embedded.shape[-1]))
                 
-                # Adapt shared global token for this scale
-                adapted_glb = self.scale_adapters[str(patch_size)](self.shared_glb_token)
-                adapted_glb = adapted_glb.repeat((batch_size, 1, 1, 1))
-                
-                embedded_with_glb = torch.cat([embedded, adapted_glb], dim=2)
+                # Add scale-specific global token
+                scale_global = self.global_tokens[str(patch_size)].repeat((batch_size, 1, 1, 1))
+                embedded_with_glb = torch.cat([embedded, scale_global], dim=2)
                 
                 scale_embeddings.append(embedded_with_glb)
+                scale_patch_nums.append(embedded_with_glb.shape[2])
         
-        # Concatenate all scales along the patch dimension
+        # Apply advanced fusion
         if len(scale_embeddings) > 1:
-            # For fusion, we need to handle different patch numbers
-            # Let's use a simple concatenation approach first
-            combined_embedding = torch.cat(scale_embeddings, dim=2)  # Concat along patch dimension
+            fused_embedding = self.scale_fusion(scale_embeddings, scale_patch_nums)
         else:
-            combined_embedding = scale_embeddings[0]
+            fused_embedding = scale_embeddings[0]
         
         # Reshape for encoder input
-        final_embedding = torch.reshape(combined_embedding, 
-                                      (combined_embedding.shape[0] * combined_embedding.shape[1], 
-                                       combined_embedding.shape[2], combined_embedding.shape[3]))
+        final_embedding = torch.reshape(fused_embedding, 
+                                      (fused_embedding.shape[0] * fused_embedding.shape[1], 
+                                       fused_embedding.shape[2], fused_embedding.shape[3]))
         
         return self.dropout(final_embedding), n_vars
 
@@ -214,13 +338,14 @@ class Model(nn.Module):
         self.use_multi_scale = getattr(configs, 'use_multi_scale', False)
         if self.use_multi_scale:
             self.patch_sizes = getattr(configs, 'patch_sizes', [8, 16, 24])
+            self.fusion_type = getattr(configs, 'fusion_type', 'attention')
         
         self.n_vars = 1 if configs.features == 'MS' else configs.enc_in
         
         # Embedding - choose between single scale or multi-scale
         if self.use_multi_scale:
             self.en_embedding = MultiScaleEnEmbedding(
-                self.n_vars, configs.d_model, self.patch_sizes, configs.seq_len, configs.dropout
+                self.n_vars, configs.d_model, self.patch_sizes, configs.seq_len, configs.dropout, self.fusion_type
             )
             # Update patch_num to use the total from multi-scale embedding
             self.patch_num = self.en_embedding.total_patch_num
