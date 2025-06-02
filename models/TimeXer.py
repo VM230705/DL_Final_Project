@@ -21,6 +21,88 @@ class FlattenHead(nn.Module):
         return x
 
 
+class MultiScaleEnEmbedding(nn.Module):
+    """Multi-scale patch embedding for M1 module"""
+    def __init__(self, n_vars, d_model, patch_sizes, seq_len, dropout):
+        super(MultiScaleEnEmbedding, self).__init__()
+        self.patch_sizes = patch_sizes
+        self.seq_len = seq_len
+        self.d_model = d_model
+        
+        # Create embeddings for each patch size
+        self.patch_embeddings = nn.ModuleDict()
+        self.patch_nums = {}
+        
+        for patch_size in patch_sizes:
+            if patch_size > 0:
+                patch_num = seq_len // patch_size
+                self.patch_nums[str(patch_size)] = patch_num
+                self.patch_embeddings[str(patch_size)] = nn.Linear(patch_size, d_model, bias=False)
+        
+        # Single shared global token (more parameter efficient)
+        self.shared_glb_token = nn.Parameter(torch.randn(1, n_vars, 1, d_model))
+        
+        # Scale-specific adaptation layers for the global token
+        self.scale_adapters = nn.ModuleDict()
+        for patch_size in patch_sizes:
+            self.scale_adapters[str(patch_size)] = nn.Linear(d_model, d_model, bias=True)
+        
+        # Position embedding
+        self.position_embedding = PositionalEmbedding(d_model)
+        
+        # Fusion mechanism - learnable weights for combining different scales
+        self.scale_fusion = nn.Linear(len(patch_sizes) * d_model, d_model)
+        self.dropout = nn.Dropout(dropout)
+        
+        # Calculate total patch numbers for head computation
+        self.total_patch_num = sum(self.patch_nums.values()) + len(patch_sizes)  # +len for global tokens
+        
+    def forward(self, x):
+        # x shape: [B, C, L]
+        n_vars = x.shape[1]
+        batch_size = x.shape[0]
+        
+        scale_embeddings = []
+        
+        for patch_size in self.patch_sizes:
+            if patch_size > 0:
+                # Patch the input with current scale
+                x_patched = x.unfold(dimension=-1, size=patch_size, step=patch_size)
+                # x_patched: [B, C, patch_num, patch_size]
+                
+                # Reshape for embedding
+                x_reshaped = torch.reshape(x_patched, (batch_size * n_vars, x_patched.shape[2], x_patched.shape[3]))
+                
+                # Apply embedding
+                embedded = self.patch_embeddings[str(patch_size)](x_reshaped) + self.position_embedding(x_reshaped)
+                
+                # Reshape back
+                embedded = torch.reshape(embedded, (batch_size, n_vars, embedded.shape[-2], embedded.shape[-1]))
+                
+                # Adapt shared global token for this scale
+                adapted_glb = self.scale_adapters[str(patch_size)](self.shared_glb_token)
+                adapted_glb = adapted_glb.repeat((batch_size, 1, 1, 1))
+                
+                embedded_with_glb = torch.cat([embedded, adapted_glb], dim=2)
+                
+                scale_embeddings.append(embedded_with_glb)
+        
+        # Concatenate all scales along the patch dimension
+        if len(scale_embeddings) > 1:
+            # For fusion, we need to handle different patch numbers
+            # Let's use a simple concatenation approach first
+            combined_embedding = torch.cat(scale_embeddings, dim=2)  # Concat along patch dimension
+        else:
+            combined_embedding = scale_embeddings[0]
+        
+        # Reshape for encoder input
+        final_embedding = torch.reshape(combined_embedding, 
+                                      (combined_embedding.shape[0] * combined_embedding.shape[1], 
+                                       combined_embedding.shape[2], combined_embedding.shape[3]))
+        
+        return self.dropout(final_embedding), n_vars
+
+
 class EnEmbedding(nn.Module):
     def __init__(self, n_vars, d_model, patch_len, dropout):
         super(EnEmbedding, self).__init__()
@@ -127,13 +209,28 @@ class Model(nn.Module):
         self.pred_len = configs.pred_len
         self.use_norm = configs.use_norm
         self.patch_len = configs.patch_len
-        if configs.patch_len != 0:
-            self.patch_num = int(configs.seq_len // configs.patch_len)
-        else:
-            self.patch_num = 0
+        
+        # Multi-scale patch support
+        self.use_multi_scale = getattr(configs, 'use_multi_scale', False)
+        if self.use_multi_scale:
+            self.patch_sizes = getattr(configs, 'patch_sizes', [8, 16, 24])
+        
         self.n_vars = 1 if configs.features == 'MS' else configs.enc_in
-        # Embedding
-        self.en_embedding = EnEmbedding(self.n_vars, configs.d_model, self.patch_len, configs.dropout)
+        
+        # Embedding - choose between single scale or multi-scale
+        if self.use_multi_scale:
+            self.en_embedding = MultiScaleEnEmbedding(
+                self.n_vars, configs.d_model, self.patch_sizes, configs.seq_len, configs.dropout
+            )
+            # Update patch_num to use the total from multi-scale embedding
+            self.patch_num = self.en_embedding.total_patch_num
+        else:
+            self.en_embedding = EnEmbedding(self.n_vars, configs.d_model, self.patch_len, configs.dropout)
+            # Fix patch_num calculation for single scale
+            if self.patch_len != 0:
+                self.patch_num = int(configs.seq_len // self.patch_len) + 1  # +1 for global token
+            else:
+                self.patch_num = 1  # Only global token
 
         self.ex_embedding = DataEmbedding_inverted(configs.seq_len, configs.d_model, configs.embed, configs.freq,
                                                    configs.dropout)
@@ -159,7 +256,7 @@ class Model(nn.Module):
             ],
             norm_layer=torch.nn.LayerNorm(configs.d_model)
         )
-        self.head_nf = configs.d_model * (self.patch_num + 1)
+        self.head_nf = configs.d_model * self.patch_num
         self.head = FlattenHead(configs.enc_in, self.head_nf, configs.pred_len,
                                 head_dropout=configs.dropout)
 

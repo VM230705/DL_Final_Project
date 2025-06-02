@@ -137,10 +137,21 @@ if __name__ == '__main__':
 
     # TimeXer
     parser.add_argument('--patch_len', type=int, default=24, help='patch length')
+    
+    # Multi-scale patch arguments for M1 module
+    parser.add_argument('--use_multi_scale', action='store_true', help='Enable multi-scale patch tokenization (M1)')
+    parser.add_argument('--patch_sizes', type=str, default='8,16,24', help='Comma-separated patch sizes for multi-scale (e.g., "8,16,24")')
 
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
     args.use_gpu = True if torch.cuda.is_available() else False
+
+    # Parse multi-scale patch sizes
+    if args.use_multi_scale:
+        args.patch_sizes = [int(x.strip()) for x in args.patch_sizes.split(',')]
+        print(f"Multi-scale patching enabled with patch sizes: {args.patch_sizes}")
+    else:
+        args.patch_sizes = [args.patch_len]  # Fallback to single patch size
 
     print(torch.cuda.is_available())
 
