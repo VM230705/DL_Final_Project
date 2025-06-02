@@ -4,3 +4,5 @@ datasets/
 *.pyc
 dataset/
 bfg.jar
+fusion_comparison_logs_2025*
+test_results/
