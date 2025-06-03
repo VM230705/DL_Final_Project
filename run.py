@@ -144,6 +144,15 @@ if __name__ == '__main__':
     parser.add_argument('--fusion_type', type=str, default='attention', choices=['attention', 'gated', 'hierarchical', 'concat'], 
                         help='Fusion strategy for multi-scale patches: attention, gated, hierarchical, or concat')
 
+    # M4: Spike-aware Loss Function arguments
+    parser.add_argument('--use_spike_loss', action='store_true', help='Enable spike-aware loss function (M4)')
+    parser.add_argument('--spike_loss_type', type=str, default='spike_aware', choices=['spike_aware', 'adaptive', 'hybrid'],
+                        help='Type of spike-aware loss: spike_aware, adaptive, or hybrid')
+    parser.add_argument('--spike_weight', type=float, default=2.0, help='Weight for spike regions in spike-aware loss')
+    parser.add_argument('--derivative_weight', type=float, default=1.5, help='Weight for high-derivative regions')
+    parser.add_argument('--spike_percentile', type=float, default=95.0, help='Percentile threshold for spike detection')
+    parser.add_argument('--hybrid_alpha', type=float, default=0.7, help='Weight for standard loss in hybrid loss (1-alpha for spike loss)')
+
     args = parser.parse_args()
     # args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
     args.use_gpu = True if torch.cuda.is_available() else False

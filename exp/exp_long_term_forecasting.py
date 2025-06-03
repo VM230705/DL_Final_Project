@@ -33,8 +33,47 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         return model_optim
 
     def _select_criterion(self):
-        criterion = nn.MSELoss()
-        return criterion
+        # Check if spike-aware loss is enabled
+        if hasattr(self.args, 'use_spike_loss') and self.args.use_spike_loss:
+            from utils.losses import SpikeAwareLoss, AdaptiveSpikeAwareLoss, HybridLoss
+            
+            # Get spike loss parameters
+            spike_loss_type = getattr(self.args, 'spike_loss_type', 'spike_aware')
+            spike_weight = getattr(self.args, 'spike_weight', 2.0)
+            derivative_weight = getattr(self.args, 'derivative_weight', 1.5)
+            spike_percentile = getattr(self.args, 'spike_percentile', 95.0)
+            hybrid_alpha = getattr(self.args, 'hybrid_alpha', 0.7)
+            
+            # Select appropriate spike-aware loss type
+            if spike_loss_type == 'spike_aware':
+                criterion = SpikeAwareLoss(
+                    base_loss='mse',
+                    spike_weight=spike_weight,
+                    derivative_weight=derivative_weight,
+                    percentile=spike_percentile
+                )
+            elif spike_loss_type == 'adaptive':
+                criterion = AdaptiveSpikeAwareLoss(
+                    base_loss='mse',
+                    initial_spike_weight=spike_weight,
+                    initial_derivative_weight=derivative_weight
+                )
+            elif spike_loss_type == 'hybrid':
+                criterion = HybridLoss(
+                    base_loss='mse',
+                    alpha=hybrid_alpha,
+                    spike_weight=spike_weight,
+                    derivative_weight=derivative_weight
+                )
+            else:
+                raise ValueError(f"Unknown spike loss type: {spike_loss_type}")
+                
+            print(f"Using {spike_loss_type} spike-aware loss with spike_weight={spike_weight}, derivative_weight={derivative_weight}")
+            return criterion
+        else:
+            # Default MSE loss
+            criterion = nn.MSELoss()
+            return criterion
 
     def vali(self, vali_data, vali_loader, criterion):
         total_loss = []
