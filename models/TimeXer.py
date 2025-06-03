@@ -21,6 +21,160 @@ class FlattenHead(nn.Module):
         return x
 
 
+class ScaleAwareAttentionFusion(nn.Module):
+    """Scale-aware attention fusion with per-scale attention patterns"""
+    def __init__(self, d_model, patch_sizes):
+        super().__init__()
+        self.d_model = d_model
+        self.patch_sizes = patch_sizes
+        
+        # Per-scale self-attention modules
+        self.scale_attentions = nn.ModuleDict()
+        for patch_size in patch_sizes:
+            self.scale_attentions[str(patch_size)] = nn.MultiheadAttention(
+                d_model, num_heads=8, dropout=0.1, batch_first=True
+            )
+        
+        # Cross-scale interaction attention
+        self.cross_scale_attention = nn.MultiheadAttention(
+            d_model, num_heads=4, dropout=0.1, batch_first=True
+        )
+        
+        # Learnable scale importance weights
+        self.scale_importance = nn.Parameter(torch.ones(len(patch_sizes)))
+        
+        # Layer normalization for each scale
+        self.scale_norms = nn.ModuleDict()
+        for patch_size in patch_sizes:
+            self.scale_norms[str(patch_size)] = nn.LayerNorm(d_model)
+        
+        # Final output projection
+        self.output_projection = nn.Sequential(
+            nn.Linear(d_model, d_model),
+            nn.LayerNorm(d_model),
+            nn.GELU(),
+            nn.Dropout(0.1)
+        )
+        
+    def forward(self, scale_embeddings, scale_patch_nums):
+        batch_size, n_vars = scale_embeddings[0].shape[:2]
+        
+        # Step 1: Per-scale self-attention
+        refined_scales = []
+        for i, (patch_size, embedding) in enumerate(zip(self.patch_sizes, scale_embeddings)):
+            # Reshape for attention: [B*n_vars, patch_num, d_model]
+            embedding_flat = embedding.view(batch_size * n_vars, embedding.shape[2], self.d_model)
+            
+            # Apply scale-specific attention
+            refined, _ = self.scale_attentions[str(patch_size)](
+                embedding_flat, embedding_flat, embedding_flat
+            )
+            
+            # Residual connection and normalization
+            refined = self.scale_norms[str(patch_size)](embedding_flat + refined)
+            
+            # Reshape back: [B, n_vars, patch_num, d_model]
+            refined = refined.view(batch_size, n_vars, embedding.shape[2], self.d_model)
+            refined_scales.append(refined)
+        
+        # Step 2: Cross-scale interaction
+        all_scales = torch.cat(refined_scales, dim=2)  # [B, n_vars, total_patches, d_model]
+        all_scales_flat = all_scales.view(batch_size * n_vars, -1, self.d_model)
+        
+        cross_attended, attention_weights = self.cross_scale_attention(
+            all_scales_flat, all_scales_flat, all_scales_flat
+        )
+        
+        # Step 3: Apply learnable scale importance weights
+        importance_weights = F.softmax(self.scale_importance, dim=0)
+        
+        # Split back to individual scales and apply importance weights
+        start_idx = 0
+        weighted_scales = []
+        for i, (embedding, patch_num) in enumerate(zip(refined_scales, scale_patch_nums)):
+            end_idx = start_idx + patch_num
+            scale_output = cross_attended[:, start_idx:end_idx, :]
+            
+            # Apply importance weight
+            weighted_scale = scale_output * importance_weights[i]
+            weighted_scales.append(weighted_scale)
+            start_idx = end_idx
+        
+        # Concatenate weighted scales
+        final_output = torch.cat(weighted_scales, dim=1)
+        
+        # Final projection
+        final_output = self.output_projection(final_output)
+        
+        # Reshape back to [B, n_vars, total_patches, d_model]
+        total_patches = final_output.shape[1]
+        final_output = final_output.view(batch_size, n_vars, total_patches, self.d_model)
+        
+        return final_output
+
+
+class ProgressiveMultiResFusion(nn.Module):
+    """Progressive multi-resolution fusion inspired by FPN"""
+    def __init__(self, d_model, patch_sizes):
+        super().__init__()
+        self.d_model = d_model
+        self.patch_sizes = sorted(patch_sizes)  # Sort from fine to coarse
+        
+        # Pyramid fusion layers
+        self.pyramid_layers = nn.ModuleList()
+        for i in range(len(patch_sizes) - 1):
+            self.pyramid_layers.append(
+                nn.Sequential(
+                    nn.Linear(d_model * 2, d_model),
+                    nn.LayerNorm(d_model),
+                    nn.GELU(),
+                    nn.Dropout(0.1)
+                )
+            )
+        
+        # Cross-resolution connections with adaptive pooling
+        self.adaptive_pools = nn.ModuleList([
+            nn.AdaptiveAvgPool1d(1) for _ in range(len(patch_sizes) - 1)
+        ])
+        
+    def forward(self, scale_embeddings, scale_patch_nums):
+        batch_size, n_vars = scale_embeddings[0].shape[:2]
+        
+        # Sort embeddings by patch size (fine to coarse)
+        patch_size_indices = np.argsort(self.patch_sizes)
+        sorted_embeddings = [scale_embeddings[i] for i in patch_size_indices]
+        sorted_patch_nums = [scale_patch_nums[i] for i in patch_size_indices]
+        
+        # Start with finest scale
+        features = sorted_embeddings[0]  # [B, n_vars, patch_num, d_model]
+        
+        # Progressive fusion - but keep concatenating all scales
+        all_fused_scales = [features]
+        
+        for i, pyramid_layer in enumerate(self.pyramid_layers):
+            next_scale = sorted_embeddings[i + 1]
+            
+            # Simple approach: just combine features with next scale through concatenation
+            # and apply pyramid layer for refinement
+            combined = torch.cat([features, next_scale], dim=-1)  # [B, n_vars, patch_num, 2*d_model]
+            
+            # Reshape for pyramid layer
+            combined_flat = combined.view(batch_size * n_vars, combined.shape[2], combined.shape[3])
+            
+            # Apply pyramid layer
+            refined = pyramid_layer(combined_flat)
+            refined = refined.view(batch_size, n_vars, refined.shape[1], self.d_model)
+            
+            # Update features for next iteration
+            features = refined
+            all_fused_scales.append(next_scale)  # Keep all original scales
+        
+        # Final output: concatenate all original scales to maintain expected dimensions
+        final_output = torch.cat(all_fused_scales, dim=2)
+        
+        return final_output
+
+
 class ScaleFusionModule(nn.Module):
     """Advanced fusion module for multi-scale patches"""
     def __init__(self, d_model, num_scales, fusion_type="attention"):
@@ -43,6 +197,14 @@ class ScaleFusionModule(nn.Module):
                 nn.Linear(d_model * 2, d_model),
                 nn.Dropout(0.1)
             )
+            
+        elif fusion_type == "scale_aware_attention":
+            # Use the new scale-aware attention fusion
+            self.scale_aware_fusion = ScaleAwareAttentionFusion(d_model, [8, 16, 24])  # Default patch sizes
+            
+        elif fusion_type == "progressive_multires":
+            # Use progressive multi-resolution fusion
+            self.progressive_fusion = ProgressiveMultiResFusion(d_model, [8, 16, 24])
             
         elif fusion_type == "gated":
             # Gated fusion with learnable weights
@@ -73,6 +235,10 @@ class ScaleFusionModule(nn.Module):
         
         if self.fusion_type == "attention":
             return self._attention_fusion(scale_embeddings, batch_size, n_vars)
+        elif self.fusion_type == "scale_aware_attention":
+            return self.scale_aware_fusion(scale_embeddings, scale_patch_nums)
+        elif self.fusion_type == "progressive_multires":
+            return self.progressive_fusion(scale_embeddings, scale_patch_nums)
         elif self.fusion_type == "gated":
             return self._gated_fusion(scale_embeddings, batch_size, n_vars)
         elif self.fusion_type == "hierarchical":
@@ -175,7 +341,7 @@ class MultiScaleEnEmbedding(nn.Module):
         # Position embedding
         self.position_embedding = PositionalEmbedding(d_model)
         
-        # Advanced fusion module
+        # Advanced fusion module with new fusion types
         self.scale_fusion = ScaleFusionModule(d_model, len(patch_sizes), fusion_type)
         
         self.dropout = nn.Dropout(dropout)

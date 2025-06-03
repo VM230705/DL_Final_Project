@@ -141,8 +141,9 @@ if __name__ == '__main__':
     # Multi-scale patch arguments for M1 module
     parser.add_argument('--use_multi_scale', action='store_true', help='Enable multi-scale patch tokenization (M1)')
     parser.add_argument('--patch_sizes', type=str, default='8,16,24', help='Comma-separated patch sizes for multi-scale (e.g., "8,16,24")')
-    parser.add_argument('--fusion_type', type=str, default='attention', choices=['attention', 'gated', 'hierarchical', 'concat'], 
-                        help='Fusion strategy for multi-scale patches: attention, gated, hierarchical, or concat')
+    parser.add_argument('--fusion_type', type=str, default='attention', 
+                        choices=['attention', 'gated', 'hierarchical', 'concat', 'scale_aware_attention', 'progressive_multires'], 
+                        help='Fusion strategy for multi-scale patches: attention, gated, hierarchical, concat, scale_aware_attention, or progressive_multires')
 
     # M4: Spike-aware Loss Function arguments
     parser.add_argument('--use_spike_loss', action='store_true', help='Enable spike-aware loss function (M4)')

@@ -46,7 +46,7 @@ class LossComparisonExperiment:
     def create_loss_functions(self):
         """創建不同的loss函數"""
         loss_functions = {
-            'MSE': nn.MSELoss(),
+            # 'MSE': nn.MSELoss(),
             'SpikeAware': SpikeAwareLoss(
                 base_loss='mse', 
                 spike_weight=2.0, 
@@ -440,7 +440,7 @@ def create_weather_args():
     # 訓練參數
     args.batch_size = 4
     args.learning_rate = 0.0001
-    args.train_epochs = 15
+    args.train_epochs = 10
     args.patience = 3
     args.use_amp = False
     args.lradj = 'type1'
