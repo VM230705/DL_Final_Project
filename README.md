@@ -39,7 +39,7 @@
 ## 🏗️ 多尺度架構設計
 
 ### MultiScaleEnEmbedding 核心架構
-![alt text](image.png)
+![image](https://github.com/user-attachments/assets/72d1c0bd-08f6-4d7b-94b2-b7ec659d1ca3)
 ```mermaid
 flowchart TD
     subgraph Input["📥 輸入處理"]
