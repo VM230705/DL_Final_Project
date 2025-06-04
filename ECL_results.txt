@@ -1,30 +1,36 @@
 No directory specified, using current directory
-Found 16 log files
+Found 22 log files
+Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_concat_ECL_336 copy.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_concat_ECL_336.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_concat_ECL_720.log
+Processing: ./fusion_comparison_logs_20250603_060610_ECL/single_scale_ECL_720.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_hierarchical_ECL_720.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_hierarchical_ECL_96.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_attention_ECL_96.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_gated_ECL_192.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_attention_ECL_192.log
+Processing: ./fusion_comparison_logs_20250603_060610_ECL/single_scale_ECL_96.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_concat_ECL_96.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_hierarchical_ECL_192.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_concat_ECL_192.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_attention_ECL_720.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_attention_ECL_336.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_hierarchical_ECL_336.log
+Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_concat_ECL_336 copy 2.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_gated_ECL_96.log
+Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_concat_ECL_192 copy.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_gated_ECL_720.log
 Processing: ./fusion_comparison_logs_20250603_060610_ECL/multi_gated_ECL_336.log
+Processing: ./fusion_comparison_logs_20250603_060610_ECL/single_scale_ECL_336.log
 
 Results saved to log_analysis_results_grouped.csv
 
 Summary:
-Total experiments: 14
+Total experiments: 19
 Unique dataset-pred_len combinations: 4
 Datasets: ['ECL']
 Prediction lengths: [96, 192, 336, 720]
-Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical']
+Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'SingleScale']
 
 Results by dataset-pred_len groups (MSE from high to low within each group):
 ================================================================================
@@ -33,9 +39,10 @@ ECL - 96:
 ----------------------------------------
                fusion_type       mse       mae
 1     MultiScale_Attention  0.139652  0.241339
-2         MultiScale_Gated  0.140607  0.241840
-3  MultiScale_Hierarchical  0.140767  0.243046
-4        MultiScale_Concat  0.141034  0.242035
+2              SingleScale  0.140419  0.242488
+3         MultiScale_Gated  0.140607  0.241840
+4  MultiScale_Hierarchical  0.140767  0.243046
+5        MultiScale_Concat  0.141034  0.242035
 
 ECL - 192:
 ----------------------------------------
@@ -43,13 +50,16 @@ ECL - 192:
 1  MultiScale_Hierarchical  0.155464  0.253039
 2     MultiScale_Attention  0.155486  0.254055
 3         MultiScale_Gated  0.155596  0.253212
+4        MultiScale_Concat  0.156864  0.255023
 
 ECL - 336:
 ----------------------------------------
                fusion_type       mse       mae
 1  MultiScale_Hierarchical  0.174464  0.271525
 2     MultiScale_Attention  0.174536  0.272864
-3         MultiScale_Gated  0.176586  0.272555
+3        MultiScale_Concat  0.174835  0.271986
+4              SingleScale  0.176409  0.275107
+5         MultiScale_Gated  0.176586  0.272555
 
 ECL - 720:
 ----------------------------------------
@@ -58,3 +68,4 @@ ECL - 720:
 2  MultiScale_Hierarchical  0.204418  0.300310
 3     MultiScale_Attention  0.205861  0.302213
 4         MultiScale_Gated  0.208858  0.302077
+5              SingleScale  0.210614  0.306039

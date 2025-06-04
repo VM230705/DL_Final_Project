@@ -210,8 +210,8 @@ if __name__ == "__main__":
         # fusion_comparison_logs_20250602_210417_weather
         # fusion_comparison_logs_20250603_093127_weather_sec
         # fusion_comparison_logs_20250603_060610_ECL
-        # fusion_comparison_logs_20250603_172323
-        current_dir = "./fusion_comparison_logs_20250603_060610_ECL"
+        # fusion_comparison_logs_20250603_172323_traffic
+        current_dir = "./fusion_comparison_logs_20250603_172323_traffic"
         print("No directory specified, using current directory")
         process_log_directory(current_dir, "log_analysis_results_grouped.csv")
     else:
