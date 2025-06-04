@@ -1,0 +1,66 @@
+No directory specified, using current directory
+Found 18 log files
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_hierarchical_weather_192.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/single_scale_weather_96.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_concat_weather_336.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_hierarchical_weather_336.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_gated_weather_720.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_attention_weather_96.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/single_scale_weather_720.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/single_scale_weather_192.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_hierarchical_weather_96.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_attention_weather_720.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_gated_weather_96.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_attention_weather_336.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/single_scale_weather_336.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_concat_weather_192.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_concat_weather_96.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_attention_weather_192.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_gated_weather_192.log
+Processing: ./fusion_comparison_logs_20250602_210417_weather/multi_gated_weather_336.log
+
+Results saved to log_analysis_results_grouped.csv
+
+Summary:
+Total experiments: 18
+Unique dataset-pred_len combinations: 4
+Datasets: ['Weather']
+Prediction lengths: [96, 192, 336, 720]
+Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'SingleScale']
+
+Results by dataset-pred_len groups (MSE from high to low within each group):
+================================================================================
+
+Weather - 96:
+----------------------------------------
+               fusion_type       mse       mae
+1     MultiScale_Attention  0.156587  0.204334
+2  MultiScale_Hierarchical  0.157291  0.205354
+3              SingleScale  0.157380  0.204668
+4        MultiScale_Concat  0.157952  0.206038
+5         MultiScale_Gated  0.158228  0.206088
+
+Weather - 192:
+----------------------------------------
+               fusion_type       mse       mae
+1  MultiScale_Hierarchical  0.203691  0.247859
+2              SingleScale  0.204062  0.247459
+3        MultiScale_Concat  0.204084  0.248289
+4         MultiScale_Gated  0.204303  0.247288
+5     MultiScale_Attention  0.205937  0.249712
+
+Weather - 336:
+----------------------------------------
+               fusion_type       mse       mae
+1              SingleScale  0.260668  0.289712
+2  MultiScale_Hierarchical  0.261552  0.291125
+3         MultiScale_Gated  0.262229  0.290777
+4        MultiScale_Concat  0.263350  0.291826
+5     MultiScale_Attention  0.263836  0.291797
+
+Weather - 720:
+----------------------------------------
+            fusion_type       mse       mae
+1           SingleScale  0.340265  0.340793
+2      MultiScale_Gated  0.343072  0.342507
+3  MultiScale_Attention  0.344612  0.345329

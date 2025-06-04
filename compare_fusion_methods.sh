@@ -14,7 +14,7 @@ RESULT_FILE="./fusion_comparison_results_${TIMESTAMP}.txt"
 # Default parameters (can be overridden by command line arguments)
 DATASET="weather"
 PRED_LENS="96,192,336,720"
-FUSION_METHODS="single_scale,multi_attention,multi_gated,multi_hierarchical,multi_concat"
+FUSION_METHODS="single_scale,multi_attention,multi_gated,multi_hierarchical,multi_concat,multi_scale_aware_attention,multi_progressive_multires"
 EPOCHS=10
 # Check if CUDA_VISIBLE_DEVICES is set, use it as default GPU_ID
 if [[ -n "$CUDA_VISIBLE_DEVICES" && "$CUDA_VISIBLE_DEVICES" =~ ^[0-9]+$ ]]; then
@@ -243,7 +243,7 @@ print_usage() {
     echo "OPTIONS:"
     echo "  -d, --dataset DATASET        Dataset to use (weather,ETTh1,ETTh2,ETTm1,ETTm2,ECL,traffic) [default: weather]"
     echo "  -p, --pred_lens LENGTHS      Comma-separated prediction lengths [default: 96,192,336,720]"
-    echo "  -f, --fusion_methods METHODS Comma-separated fusion methods [default: single_scale,multi_attention,multi_gated,multi_hierarchical,multi_concat]"
+    echo "  -f, --fusion_methods METHODS Comma-separated fusion methods [default: single_scale,multi_attention,multi_gated,multi_hierarchical,multi_concat,multi_scale_aware_attention,multi_progressive_multires]"
     echo "  -e, --epochs EPOCHS          Number of training epochs [default: 10]"
     echo "  -g, --gpu GPU_ID             GPU ID to use [default: 0]"
     echo "  -h, --help                   Show this help message"
@@ -254,6 +254,8 @@ print_usage() {
     echo "  - multi_gated: Multi-scale with gated fusion"
     echo "  - multi_hierarchical: Multi-scale with hierarchical fusion"
     echo "  - multi_concat: Multi-scale with concatenation fusion"
+    echo "  - multi_scale_aware_attention: Multi-scale with scale-aware attention fusion"
+    echo "  - multi_progressive_multires: Multi-scale with progressive multi-resolution fusion"
     echo ""
     echo "Examples:"
     echo "  $0 --dataset weather --pred_lens 96,192 --fusion_methods single_scale,multi_attention"
@@ -381,6 +383,12 @@ run_experiment() {
             ;;
         "multi_concat")
             cmd="$cmd --use_multi_scale --fusion_type concat --patch_sizes 8,16,24 --des MultiScale_${dataset}_Concat"
+            ;;
+        "multi_scale_aware_attention")
+            cmd="$cmd --use_multi_scale --fusion_type scale_aware_attention --patch_sizes 8,16,24 --des MultiScale_${dataset}_ScaleAwareAttention"
+            ;;
+        "multi_progressive_multires")
+            cmd="$cmd --use_multi_scale --fusion_type progressive_multires --patch_sizes 8,16,24 --des MultiScale_${dataset}_ProgressiveMultires"
             ;;
         *)
             echo "❌ Unknown fusion method: $fusion_method"

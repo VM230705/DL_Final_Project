@@ -1,0 +1,86 @@
+No directory specified, using current directory
+Found 28 log files
+Processing: ./fusion_comparison_logs_20250603_150107/multi_concat_ETTm2_192.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_progressive_multires_ETTm2_96.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_gated_ETTm2_192.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_progressive_multires_ETTm2_192.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_progressive_multires_ETTm2_336.log
+Processing: ./fusion_comparison_logs_20250603_150107/single_scale_ETTm2_336.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_scale_aware_attention_ETTm2_192.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_scale_aware_attention_ETTm2_720.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_hierarchical_ETTm2_192.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_gated_ETTm2_96.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_attention_ETTm2_336.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_scale_aware_attention_ETTm2_336.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_gated_ETTm2_336.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_concat_ETTm2_96.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_hierarchical_ETTm2_336.log
+Processing: ./fusion_comparison_logs_20250603_150107/single_scale_ETTm2_192.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_scale_aware_attention_ETTm2_96.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_attention_ETTm2_720.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_attention_ETTm2_96.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_attention_ETTm2_192.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_hierarchical_ETTm2_96.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_hierarchical_ETTm2_720.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_concat_ETTm2_720.log
+Processing: ./fusion_comparison_logs_20250603_150107/single_scale_ETTm2_96.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_gated_ETTm2_720.log
+Processing: ./fusion_comparison_logs_20250603_150107/single_scale_ETTm2_720.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_progressive_multires_ETTm2_720.log
+Processing: ./fusion_comparison_logs_20250603_150107/multi_concat_ETTm2_336.log
+
+Results saved to log_analysis_results_grouped.csv
+
+Summary:
+Total experiments: 28
+Unique dataset-pred_len combinations: 4
+Datasets: ['ETTm2']
+Prediction lengths: [96, 192, 336, 720]
+Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'MultiScale_ProgressiveMultires', 'SingleScale']
+
+Results by dataset-pred_len groups (MSE from high to low within each group):
+================================================================================
+
+ETTm2 - 96:
+----------------------------------------
+                      fusion_type       mse       mae
+1  MultiScale_ProgressiveMultires  0.169917  0.255150
+2         MultiScale_Hierarchical  0.172424  0.256112
+3            MultiScale_Attention  0.172847  0.256361
+4                     SingleScale  0.173051  0.255310
+5               MultiScale_Concat  0.173730  0.258775
+6                MultiScale_Gated  0.173883  0.257867
+7            MultiScale_Attention  0.175560  0.259203
+
+ETTm2 - 192:
+----------------------------------------
+                      fusion_type       mse       mae
+1                     SingleScale  0.237880  0.300229
+2         MultiScale_Hierarchical  0.238986  0.301618
+3            MultiScale_Attention  0.239668  0.304595
+4  MultiScale_ProgressiveMultires  0.240308  0.303059
+5                MultiScale_Gated  0.242997  0.303779
+6            MultiScale_Attention  0.245226  0.304519
+7               MultiScale_Concat  0.252194  0.310159
+
+ETTm2 - 336:
+----------------------------------------
+                      fusion_type       mse       mae
+1                MultiScale_Gated  0.297199  0.337867
+2            MultiScale_Attention  0.298497  0.338233
+3  MultiScale_ProgressiveMultires  0.298770  0.339971
+4                     SingleScale  0.300653  0.340820
+5         MultiScale_Hierarchical  0.302249  0.341682
+6               MultiScale_Concat  0.304480  0.344138
+7            MultiScale_Attention  0.322138  0.356939
+
+ETTm2 - 720:
+----------------------------------------
+                      fusion_type       mse       mae
+1         MultiScale_Hierarchical  0.398824  0.401069
+2            MultiScale_Attention  0.399463  0.400938
+3               MultiScale_Concat  0.401068  0.399491
+4                MultiScale_Gated  0.402421  0.398752
+5                     SingleScale  0.403047  0.397285
+6            MultiScale_Attention  0.409398  0.406498
+7  MultiScale_ProgressiveMultires  0.411508  0.406284

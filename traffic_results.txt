@@ -1,0 +1,36 @@
+No directory specified, using current directory
+Found 6 log files
+Processing: ./fusion_comparison_logs_20250603_172323/multi_gated_traffic_96.log
+Processing: ./fusion_comparison_logs_20250603_172323/multi_hierarchical_traffic_96.log
+Processing: ./fusion_comparison_logs_20250603_172323/multi_attention_traffic_96.log
+Processing: ./fusion_comparison_logs_20250603_172323/multi_attention_traffic_720.log
+Processing: ./fusion_comparison_logs_20250603_172323/multi_attention_traffic_336.log
+Processing: ./fusion_comparison_logs_20250603_172323/multi_attention_traffic_192.log
+
+Results saved to log_analysis_results_grouped.csv
+
+Summary:
+Total experiments: 4
+Unique dataset-pred_len combinations: 3
+Datasets: ['Traffic']
+Prediction lengths: [96, 192, 336]
+Fusion types: ['MultiScale_Attention', 'MultiScale_Hierarchical']
+
+Results by dataset-pred_len groups (MSE from high to low within each group):
+================================================================================
+
+Traffic - 96:
+----------------------------------------
+               fusion_type       mse       mae
+1  MultiScale_Hierarchical  0.441601  0.281216
+2     MultiScale_Attention  0.455139  0.283079
+
+Traffic - 192:
+----------------------------------------
+            fusion_type       mse       mae
+1  MultiScale_Attention  0.480593  0.290005
+
+Traffic - 336:
+----------------------------------------
+            fusion_type       mse      mae
+1  MultiScale_Attention  0.496078  0.29766

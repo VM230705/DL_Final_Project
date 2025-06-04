@@ -8,3 +8,5 @@ fusion_comparison_logs_2025*
 test_results/
 advanced_fusion_logs_2025*
 loss_comparison_logs_2025*
+fusion_comparison_results_2025*
+optimal_best*.log

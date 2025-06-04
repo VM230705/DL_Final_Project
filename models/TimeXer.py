@@ -132,7 +132,7 @@ class ProgressiveMultiResFusion(nn.Module):
                 )
             )
         
-        # Cross-resolution connections with adaptive pooling
+        # Adaptive pooling to match dimensions
         self.adaptive_pools = nn.ModuleList([
             nn.AdaptiveAvgPool1d(1) for _ in range(len(patch_sizes) - 1)
         ])
@@ -148,14 +148,37 @@ class ProgressiveMultiResFusion(nn.Module):
         # Start with finest scale
         features = sorted_embeddings[0]  # [B, n_vars, patch_num, d_model]
         
-        # Progressive fusion - but keep concatenating all scales
-        all_fused_scales = [features]
+        # Keep track of all scales for final concatenation
+        all_scales = [features]
         
         for i, pyramid_layer in enumerate(self.pyramid_layers):
             next_scale = sorted_embeddings[i + 1]
             
-            # Simple approach: just combine features with next scale through concatenation
-            # and apply pyramid layer for refinement
+            # Handle different patch numbers by padding or pooling
+            current_patch_num = features.shape[2]
+            next_patch_num = next_scale.shape[2]
+            
+            if current_patch_num != next_patch_num:
+                # Use adaptive pooling to match the smaller dimension
+                min_patch_num = min(current_patch_num, next_patch_num)
+                
+                if current_patch_num > min_patch_num:
+                    # Pool features to match next_scale
+                    features_reshaped = features.view(batch_size * n_vars, current_patch_num, self.d_model)
+                    features_pooled = F.adaptive_avg_pool1d(
+                        features_reshaped.transpose(1, 2), min_patch_num
+                    ).transpose(1, 2)
+                    features = features_pooled.view(batch_size, n_vars, min_patch_num, self.d_model)
+                
+                if next_patch_num > min_patch_num:
+                    # Pool next_scale to match features
+                    next_scale_reshaped = next_scale.view(batch_size * n_vars, next_patch_num, self.d_model)
+                    next_scale_pooled = F.adaptive_avg_pool1d(
+                        next_scale_reshaped.transpose(1, 2), min_patch_num
+                    ).transpose(1, 2)
+                    next_scale = next_scale_pooled.view(batch_size, n_vars, min_patch_num, self.d_model)
+            
+            # Now we can safely concatenate along the feature dimension
             combined = torch.cat([features, next_scale], dim=-1)  # [B, n_vars, patch_num, 2*d_model]
             
             # Reshape for pyramid layer
@@ -167,10 +190,12 @@ class ProgressiveMultiResFusion(nn.Module):
             
             # Update features for next iteration
             features = refined
-            all_fused_scales.append(next_scale)  # Keep all original scales
+            
+            # Keep the original next_scale for final concatenation
+            all_scales.append(sorted_embeddings[i + 1])
         
-        # Final output: concatenate all original scales to maintain expected dimensions
-        final_output = torch.cat(all_fused_scales, dim=2)
+        # Final output: concatenate all original scales along patch dimension
+        final_output = torch.cat(all_scales, dim=2)
         
         return final_output
 
