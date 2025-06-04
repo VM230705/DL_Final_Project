@@ -36,7 +36,7 @@ Total experiments: 28
 Unique dataset-pred_len combinations: 4
 Datasets: ['ETTh1']
 Prediction lengths: [96, 192, 336, 720]
-Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'MultiScale_ProgressiveMultires', 'SingleScale']
+Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'MultiScale_ProgressiveMultires', 'MultiScale_ScaleAwareAttention', 'SingleScale']
 
 Results by dataset-pred_len groups (MSE from high to low within each group):
 ================================================================================
@@ -44,7 +44,7 @@ Results by dataset-pred_len groups (MSE from high to low within each group):
 ETTh1 - 96:
 ----------------------------------------
                       fusion_type       mse       mae
-1            MultiScale_Attention  0.379866  0.405072
+1  MultiScale_ScaleAwareAttention  0.379866  0.405072
 2                MultiScale_Gated  0.384775  0.402881
 3                     SingleScale  0.384899  0.403393
 4            MultiScale_Attention  0.387954  0.405371
@@ -61,7 +61,7 @@ ETTh1 - 192:
 4  MultiScale_ProgressiveMultires  0.443697  0.437120
 5            MultiScale_Attention  0.445771  0.440581
 6         MultiScale_Hierarchical  0.450156  0.440612
-7            MultiScale_Attention  0.450686  0.447217
+7  MultiScale_ScaleAwareAttention  0.450686  0.447217
 
 ETTh1 - 336:
 ----------------------------------------
@@ -71,7 +71,7 @@ ETTh1 - 336:
 3         MultiScale_Hierarchical  0.475090  0.459145
 4  MultiScale_ProgressiveMultires  0.477363  0.460984
 5            MultiScale_Attention  0.484083  0.461353
-6            MultiScale_Attention  0.494465  0.474365
+6  MultiScale_ScaleAwareAttention  0.494465  0.474365
 7                MultiScale_Gated  0.506099  0.477551
 
 ETTh1 - 720:
@@ -82,5 +82,5 @@ ETTh1 - 720:
 3               MultiScale_Concat  0.522303  0.500961
 4         MultiScale_Hierarchical  0.527685  0.509447
 5            MultiScale_Attention  0.540145  0.511470
-6            MultiScale_Attention  0.558562  0.520550
+6  MultiScale_ScaleAwareAttention  0.558562  0.520550
 7  MultiScale_ProgressiveMultires  0.579785  0.532347

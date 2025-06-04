@@ -36,7 +36,7 @@ Total experiments: 28
 Unique dataset-pred_len combinations: 4
 Datasets: ['ETTm1']
 Prediction lengths: [96, 192, 336, 720]
-Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'MultiScale_ProgressiveMultires', 'SingleScale']
+Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'MultiScale_ProgressiveMultires', 'MultiScale_ScaleAwareAttention', 'SingleScale']
 
 Results by dataset-pred_len groups (MSE from high to low within each group):
 ================================================================================
@@ -49,7 +49,7 @@ ETTm1 - 96:
 3               MultiScale_Concat  0.317973  0.356250
 4         MultiScale_Hierarchical  0.319378  0.356558
 5  MultiScale_ProgressiveMultires  0.321298  0.359019
-6            MultiScale_Attention  0.323972  0.359859
+6  MultiScale_ScaleAwareAttention  0.323972  0.359859
 7                MultiScale_Gated  0.325871  0.360379
 
 ETTm1 - 192:
@@ -58,7 +58,7 @@ ETTm1 - 192:
 1                     SingleScale  0.361582  0.382944
 2  MultiScale_ProgressiveMultires  0.361582  0.382520
 3            MultiScale_Attention  0.362129  0.385040
-4            MultiScale_Attention  0.362753  0.384047
+4  MultiScale_ScaleAwareAttention  0.362753  0.384047
 5         MultiScale_Hierarchical  0.363585  0.384762
 6               MultiScale_Concat  0.364591  0.385732
 7                MultiScale_Gated  0.366317  0.385463
@@ -71,7 +71,7 @@ ETTm1 - 336:
 3         MultiScale_Hierarchical  0.395654  0.408402
 4               MultiScale_Concat  0.396599  0.406362
 5  MultiScale_ProgressiveMultires  0.397162  0.408474
-6            MultiScale_Attention  0.399522  0.411137
+6  MultiScale_ScaleAwareAttention  0.399522  0.411137
 7                MultiScale_Gated  0.400560  0.409333
 
 ETTm1 - 720:
@@ -83,4 +83,4 @@ ETTm1 - 720:
 4            MultiScale_Attention  0.456635  0.447960
 5         MultiScale_Hierarchical  0.456996  0.443856
 6               MultiScale_Concat  0.458063  0.443334
-7            MultiScale_Attention  0.459893  0.449541
+7  MultiScale_ScaleAwareAttention  0.459893  0.449541

@@ -1,33 +1,33 @@
 No directory specified, using current directory
 Found 28 log files
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_scale_aware_attention_weather_96.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_progressive_multires_weather_720.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_hierarchical_weather_192.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/single_scale_weather_96.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_concat_weather_336.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_hierarchical_weather_336.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_scale_aware_attention_weather_192.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_gated_weather_720.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_progressive_multires_weather_192.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_attention_weather_96.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/single_scale_weather_720.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_scale_aware_attention_weather_336.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/single_scale_weather_192.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_hierarchical_weather_96.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_attention_weather_720.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_gated_weather_96.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_attention_weather_336.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_concat_weather_720.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/single_scale_weather_336.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_concat_weather_192.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_concat_weather_96.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_scale_aware_attention_weather_720.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_progressive_multires_weather_96.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_hierarchical_weather_720.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_attention_weather_192.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_progressive_multires_weather_336.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_gated_weather_192.log
-Processing: ./fusion_comparison_logs_20250603_093127_weather/multi_gated_weather_336.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_scale_aware_attention_weather_96.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_progressive_multires_weather_720.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_hierarchical_weather_192.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/single_scale_weather_96.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_concat_weather_336.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_hierarchical_weather_336.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_scale_aware_attention_weather_192.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_gated_weather_720.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_progressive_multires_weather_192.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_attention_weather_96.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/single_scale_weather_720.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_scale_aware_attention_weather_336.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/single_scale_weather_192.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_hierarchical_weather_96.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_attention_weather_720.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_gated_weather_96.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_attention_weather_336.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_concat_weather_720.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/single_scale_weather_336.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_concat_weather_192.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_concat_weather_96.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_scale_aware_attention_weather_720.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_progressive_multires_weather_96.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_hierarchical_weather_720.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_attention_weather_192.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_progressive_multires_weather_336.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_gated_weather_192.log
+Processing: ./fusion_comparison_logs_20250603_093127_weather_sec/multi_gated_weather_336.log
 
 Results saved to log_analysis_results_grouped.csv
 
@@ -36,7 +36,7 @@ Total experiments: 28
 Unique dataset-pred_len combinations: 4
 Datasets: ['Weather']
 Prediction lengths: [96, 192, 336, 720]
-Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'MultiScale_ProgressiveMultires', 'SingleScale']
+Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'MultiScale_ProgressiveMultires', 'MultiScale_ScaleAwareAttention', 'SingleScale']
 
 Results by dataset-pred_len groups (MSE from high to low within each group):
 ================================================================================
@@ -44,7 +44,7 @@ Results by dataset-pred_len groups (MSE from high to low within each group):
 Weather - 96:
 ----------------------------------------
                       fusion_type       mse       mae
-1            MultiScale_Attention  0.155604  0.204078
+1  MultiScale_ScaleAwareAttention  0.155604  0.204078
 2            MultiScale_Attention  0.156587  0.204334
 3  MultiScale_ProgressiveMultires  0.157066  0.205061
 4         MultiScale_Hierarchical  0.157291  0.205354
@@ -55,7 +55,7 @@ Weather - 96:
 Weather - 192:
 ----------------------------------------
                       fusion_type       mse       mae
-1            MultiScale_Attention  0.203536  0.248779
+1  MultiScale_ScaleAwareAttention  0.203536  0.248779
 2         MultiScale_Hierarchical  0.203691  0.247860
 3                     SingleScale  0.204062  0.247459
 4               MultiScale_Concat  0.204084  0.248289
@@ -68,7 +68,7 @@ Weather - 336:
                       fusion_type       mse       mae
 1                     SingleScale  0.260665  0.289710
 2         MultiScale_Hierarchical  0.261562  0.291122
-3            MultiScale_Attention  0.261605  0.290491
+3  MultiScale_ScaleAwareAttention  0.261605  0.290491
 4  MultiScale_ProgressiveMultires  0.262149  0.290902
 5                MultiScale_Gated  0.262228  0.290776
 6               MultiScale_Concat  0.263351  0.291829
@@ -83,4 +83,4 @@ Weather - 720:
 4               MultiScale_Concat  0.340789  0.341910
 5                MultiScale_Gated  0.343072  0.342507
 6            MultiScale_Attention  0.344612  0.345329
-7            MultiScale_Attention  0.347948  0.346243
+7  MultiScale_ScaleAwareAttention  0.347948  0.346243

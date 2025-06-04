@@ -36,7 +36,7 @@ Total experiments: 28
 Unique dataset-pred_len combinations: 4
 Datasets: ['ETTh2']
 Prediction lengths: [96, 192, 336, 720]
-Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'MultiScale_ProgressiveMultires', 'SingleScale']
+Fusion types: ['MultiScale_Attention', 'MultiScale_Concat', 'MultiScale_Gated', 'MultiScale_Hierarchical', 'MultiScale_ProgressiveMultires', 'MultiScale_ScaleAwareAttention', 'SingleScale']
 
 Results by dataset-pred_len groups (MSE from high to low within each group):
 ================================================================================
@@ -49,7 +49,7 @@ ETTh2 - 96:
 3            MultiScale_Attention  0.288407  0.337368
 4                MultiScale_Gated  0.288414  0.338216
 5               MultiScale_Concat  0.289918  0.340550
-6            MultiScale_Attention  0.292571  0.343704
+6  MultiScale_ScaleAwareAttention  0.292571  0.343704
 7                     SingleScale  0.296287  0.346960
 
 ETTh2 - 192:
@@ -60,7 +60,7 @@ ETTh2 - 192:
 3               MultiScale_Concat  0.371245  0.392974
 4         MultiScale_Hierarchical  0.372621  0.392965
 5  MultiScale_ProgressiveMultires  0.375219  0.394466
-6            MultiScale_Attention  0.375394  0.396704
+6  MultiScale_ScaleAwareAttention  0.375394  0.396704
 7                     SingleScale  0.381016  0.399001
 
 ETTh2 - 336:
@@ -70,7 +70,7 @@ ETTh2 - 336:
 2               MultiScale_Concat  0.422609  0.430272
 3            MultiScale_Attention  0.425798  0.429622
 4                MultiScale_Gated  0.428477  0.432957
-5            MultiScale_Attention  0.431289  0.434665
+5  MultiScale_ScaleAwareAttention  0.431289  0.434665
 6         MultiScale_Hierarchical  0.431892  0.432862
 7  MultiScale_ProgressiveMultires  0.432270  0.437116
 
@@ -83,4 +83,4 @@ ETTh2 - 720:
 4  MultiScale_ProgressiveMultires  0.426577  0.447044
 5         MultiScale_Hierarchical  0.430778  0.448323
 6            MultiScale_Attention  0.434073  0.449468
-7            MultiScale_Attention  0.450955  0.454688
+7  MultiScale_ScaleAwareAttention  0.450955  0.454688

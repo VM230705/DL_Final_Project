@@ -46,8 +46,8 @@ def extract_info_from_log(log_file_path):
         # 提取fusion類型
         if 'MultiScale' in content or 'MultiScale' in filename:
             fusion_patterns = [
-                'Attention', 'Gated', 'Hierarchical', 'Concat', 
-                'ScaleAwareAttention', 'ScaleAware', 'ProgressiveMultires'
+                'ScaleAwareAttention', 'ScaleAware', 'Attention',  
+                'Gated', 'Hierarchical', 'Concat', 'ProgressiveMultires'
             ]
             for pattern in fusion_patterns:
                 if pattern in content or pattern in filename:
@@ -210,6 +210,7 @@ if __name__ == "__main__":
         # fusion_comparison_logs_20250602_210417_weather
         # fusion_comparison_logs_20250603_093127_weather_sec
         # fusion_comparison_logs_20250603_060610_ECL
+        # fusion_comparison_logs_20250603_172323
         current_dir = "./fusion_comparison_logs_20250603_060610_ECL"
         print("No directory specified, using current directory")
         process_log_directory(current_dir, "log_analysis_results_grouped.csv")
